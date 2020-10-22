@@ -21,8 +21,10 @@ public class MessageController {
             messageService.send(sms);
 
             return ResponseEntity.noContent().build();
-        } catch (CapacityExceededException e) {
-            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS).build();
+        } catch (CapacityExceededException ex) {
+            return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
+                    .header("X-Rate-Limit-Retry-After-Seconds", String.valueOf(ex.getRetryAfterSeconds()))
+                    .build();
         }
     }
 }

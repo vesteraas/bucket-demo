@@ -1,6 +1,7 @@
 package no.werner.bucketdemo;
 
 import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -12,9 +13,10 @@ public class MessageService {
 
     public void send(SMS sms) throws CapacityExceededException {
         Bucket bucket = capacityService.resolveBucket(sms.getShortNumber());
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
 
-        if (!bucket.tryConsume(1)) {
-            throw new CapacityExceededException();
+        if (!probe.isConsumed()) {
+            throw new CapacityExceededException(probe.getNanosToWaitForRefill() / 1_000_000_000);
         }
     }
 }
