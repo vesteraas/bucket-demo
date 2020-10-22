@@ -7,6 +7,7 @@ import java.time.Duration;
 
 public enum Capacity {
     LOUSY(1, Duration.ofDays(1)),
+    MEDIOCRE(2, Duration.ofSeconds(1)),
     BRONZE(5, Duration.ofSeconds(1)),
     SILVER(10, Duration.ofSeconds(1)),
     GOLD(20, Duration.ofSeconds(1)),
@@ -25,7 +26,9 @@ public enum Capacity {
     }
 
     static Capacity resolve(String name) {
-        if (name.startsWith("BRONZE")) {
+        if (name.startsWith("MEDIOCRE")) {
+            return MEDIOCRE;
+        } else if (name.startsWith("BRONZE")) {
             return BRONZE;
         } else if (name.startsWith("SILVER")) {
             return SILVER;
