@@ -3,6 +3,7 @@ package no.werner.bucketdemo;
 import io.github.bucket4j.Bucket;
 import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -34,7 +35,7 @@ public class MessageController {
             long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
 
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .header("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill))
+                    .header(HttpHeaders.RETRY_AFTER, String.valueOf(waitForRefill))
                     .build();
         }
     }
