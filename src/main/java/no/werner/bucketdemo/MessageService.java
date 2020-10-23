@@ -1,22 +1,15 @@
 package no.werner.bucketdemo;
 
-import io.github.bucket4j.Bucket;
-import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MessageService {
 
-    private final CapacityService capacityService;
-
-    public void send(SMS sms) throws CapacityExceededException {
-        Bucket bucket = capacityService.resolveBucket(sms.getShortNumber());
-        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
-
-        if (!probe.isConsumed()) {
-            throw new CapacityExceededException(probe.getNanosToWaitForRefill() / 1_000_000_000);
-        }
+    public void send(SMS sms) {
+        log.info("Message sent from {} to {} using short number {}", sms.getFrom(), sms.getTo(), sms.getShortNumber());
     }
 }

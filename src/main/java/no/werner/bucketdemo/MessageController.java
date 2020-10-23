@@ -1,5 +1,7 @@
 package no.werner.bucketdemo;
 
+import io.github.bucket4j.Bucket;
+import io.github.bucket4j.ConsumptionProbe;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,16 +16,25 @@ public class MessageController {
 
     private final MessageService messageService;
 
+    private final CapacityService capacityService;
+
     @RequestMapping(value = "/send", method = RequestMethod.POST)
     public ResponseEntity<Void> send(@RequestBody SMS sms) {
 
-        try {
+        Bucket bucket = capacityService.resolveBucket(sms.getShortNumber());
+        ConsumptionProbe probe = bucket.tryConsumeAndReturnRemaining(1);
+
+        if (probe.isConsumed()) {
             messageService.send(sms);
 
-            return ResponseEntity.noContent().build();
-        } catch (CapacityExceededException ex) {
+            return ResponseEntity.noContent()
+                    .header("X-Rate-Limit-Remaining", Long.toString(probe.getRemainingTokens()))
+                    .build();
+        } else {
+            long waitForRefill = probe.getNanosToWaitForRefill() / 1_000_000_000;
+
             return ResponseEntity.status(HttpStatus.TOO_MANY_REQUESTS)
-                    .header("X-Rate-Limit-Retry-After-Seconds", String.valueOf(ex.getRetryAfterSeconds()))
+                    .header("X-Rate-Limit-Retry-After-Seconds", String.valueOf(waitForRefill))
                     .build();
         }
     }

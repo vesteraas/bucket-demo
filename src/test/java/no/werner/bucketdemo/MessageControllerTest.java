@@ -9,6 +9,7 @@ import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest
@@ -29,14 +30,16 @@ class MessageControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(204));
+                .andExpect(status().is(204))
+                .andExpect(header().string("X-Rate-Limit-Remaining", "0"));
 
         mvc.perform(MockMvcRequestBuilders.post("/send")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(429));
+                .andExpect(status().is(429))
+                .andExpect(header().exists("X-Rate-Limit-Retry-After-Seconds"));
     }
 
     @Test
@@ -50,14 +53,16 @@ class MessageControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(204));
+                .andExpect(status().is(204))
+                .andExpect(header().string("X-Rate-Limit-Remaining", "1"));
 
         mvc.perform(MockMvcRequestBuilders.post("/send")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(204));
+                .andExpect(status().is(204))
+                .andExpect(header().string("X-Rate-Limit-Remaining", "0"));
     }
 
     @Test
@@ -71,20 +76,23 @@ class MessageControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(204));
+                .andExpect(status().is(204))
+                .andExpect(header().string("X-Rate-Limit-Remaining", "1"));
 
         mvc.perform(MockMvcRequestBuilders.post("/send")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(204));
+                .andExpect(status().is(204))
+                .andExpect(header().string("X-Rate-Limit-Remaining", "0"));
 
         mvc.perform(MockMvcRequestBuilders.post("/send")
                 .content(json)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
         )
-                .andExpect(status().is(429));
+                .andExpect(status().is(429))
+                .andExpect(header().exists("X-Rate-Limit-Retry-After-Seconds"));
     }
 }
